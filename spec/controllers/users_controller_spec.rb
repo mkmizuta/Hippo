@@ -1,20 +1,24 @@
 require 'spec_helper'
 
+
 describe UsersController do
    # let(:user) { create(:user) }
    #  before do 
    #    session[:id] = user.id
    #  end
 
-  describe "GET 'new'" do
-    it "is successful" do
+
+  describe 'GET #new' do 
+    it 'assigns @user as an instance of User' do 
+      let(:user) { create(:user) }
       get :new
       expect(response).to be_successful
     end
   end
 
-  describe "POST 'create'" do
-    context "with valid attributes" do
+
+  describe 'POST #create' do 
+    context 'with valid attributes' do 
       let(:user) { create(:user) }
       let(:valid_attributes) { {username: 'Ada Doe',
                                 email: 'ada@adadoe.com',
