@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :set_user, [:update, :edit, :show]
+  before_action :set_user, only: [:update, :edit, :show]
 
   def new
     @user = User.new
@@ -9,8 +9,7 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
     if @user.save
       session[:user_id] = @user.id
-      # attaches current order to newly created user
-      current_order.update(user_id: @user.id)
+      # current_order.update(user_id: @user.id)
       redirect_to root_path, notice: "You are now a hippo!"
     else
       render :new, notice: "There was a problem saving this user! :("

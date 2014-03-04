@@ -1,5 +1,6 @@
 Hippo::Application.routes.draw do
 
+  root 'welcome#index'
   resources :users
   get "users/:id/orders" => "users#orders", as: :user_orders
   post "users/:id/ship/:op_id" => "users#ship", as: :ship_order
@@ -39,5 +40,4 @@ Hippo::Application.routes.draw do
   get "/search"         => "search#show"
   get "/checkout"       => "orders#checkout", as: :checkout
   post "/purchase_info" => "orders#complete_purchase", as: :complete_purchase
-  root 'welcome#index'
 end
