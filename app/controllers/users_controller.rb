@@ -8,11 +8,13 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     if @user.save
-      session[:user_id] = @user.id
       # current_order.update(user_id: @user.id)
-      redirect_to root_path, notice: "You are now a hippo!"
+      session[:user_id] = @user.id
+      flash[:notice] = "You are now a hippo!"
+      redirect_to '/' 
     else
-      render :new, notice: "There was a problem saving this user! :("
+      flash[:notice] = "There was a problem saving this user! :("
+      render :new
     end
   end
 

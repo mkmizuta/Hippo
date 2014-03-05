@@ -1,3 +1,4 @@
+# OrdersController is for orders.
 class OrdersController < ApplicationController
   before_action :set_order, except: [:new, :create, :show]
   # don't want to show only current order
@@ -90,7 +91,7 @@ class OrdersController < ApplicationController
   def checkout
     @purchase_info = PurchaseInfo.new
     current_order.products.each do |product|
-      if product.inventory == 0 #make check inv method?
+      if product.inventory == 0 # make check inv method?
         flash[:notice] = "We are currently out of stock.
                           Please modify your order."
         redirect_to order_path(current_order)
@@ -122,7 +123,7 @@ class OrdersController < ApplicationController
       flash[:notice] = "Thank you for your purchase!
                         Your order should be shipped
                         within 7-10 business days!"
-      current_order = Order.new
+      # current_order = Order.new
       # This needs to archive paid order and open a new one
       redirect_to root_path
     else

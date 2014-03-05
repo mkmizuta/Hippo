@@ -1,11 +1,10 @@
 FactoryGirl.define do
   factory :user do
 
-    name "person"
-    email "asha@gmail.com"
-    address "blah blah blah"
-    password "hello"
-    password_digest "hello"
+    name "Ada Doe"
+    email "ada@adadoe.com"
+    password "gogo1234"
+    password_confirmation "gogo1234"
   end
 
   factory :invalid_user do 
