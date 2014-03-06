@@ -7,7 +7,7 @@ FactoryGirl.define do
     password_confirmation "gogo1234"
   end
 
-  factory :invalid_user do 
+  factory :invalid_user do
     name " "
     email " "
     address "invalid invalid"

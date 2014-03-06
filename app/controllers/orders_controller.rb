@@ -42,6 +42,8 @@ class OrdersController < ApplicationController
     end
   end
 
+
+
   def add_product
     if check_order
       flash[:notice] = "You already have this product in your cart!"
