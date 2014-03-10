@@ -5,7 +5,7 @@ class OrdersController < ApplicationController
                                       :update_quantity,
                                       :checkout]
   before_action :check_order, only: [:add_product]
-  before_action :totals, only: [:update_quantity, :checkout]
+  before_action :totals, only: [:update_quantity, :checkout] #:update_quantity, 
 
   def new
     @order = Order.new
@@ -15,9 +15,7 @@ class OrdersController < ApplicationController
   end
 
   def shipping
-    @order = Order.find(params[:id])
-    x = HTTParty.post("http://localhost:3000/rates.json",{:body => {:origin => {:country => 'US', :state => 'CA', :city => 'Beverly Hills', :zip => '90210'}, :destination => {:country => 'US', :state => 'WA', :city => 'Seattle', :zip => '98101'}, :package => {:weight => 70, :height => 15, :depth => 10, :length => 4}}})
-    
+    @purchase_info = PurchaseInfo.new
   end
 
   def edit
@@ -94,36 +92,56 @@ class OrdersController < ApplicationController
   end
 
   def checkout
-    @order = current_order
-    @products = current_order.products
-    @purchase_info = PurchaseInfo.new
-    current_order.products.each do |product|
-      if product.inventory == 0 #make check inv method?
-        flash[:notice] = "We are currently out of stock.
-                          Please modify your order."
-        redirect_to order_path(current_order)
-      elsif OrderProduct.find_by(product_id: product.id,
-                                 order_id: current_order.id
-                                 ).quantity > product.inventory
-        flash[:notice] = "We have #{product.inventory} of those in stock.
-                          Please modify your order."
-        redirect_to order_path(current_order)
-      else
-        product.update(
-          inventory: product.inventory - OrderProduct.find_by(
-            product_id: product.id,
-            order_id: current_order.id
-          ).quantity)
+    @purchase_info = PurchaseInfo.new(params.require(:purchase_info).permit(:address,
+                                    :address2,
+                                    :city,
+                                    :state,
+                                    :zip_code))
+    if @purchase_info.save
+      @order = current_order
+      @products = current_order.products
+
+      if @products
+        @products.each do |product|
+          @shippings = []
+          @shippings << HTTParty.post("http://localhost:4000/rates.json",{:body => {:origin => {:country => 'US', :state => "#{product.user.seller_state}", :city => "#{product.user.seller_city}", :zip => "#{product.user.seller_zipcode}"}, :destination => {:country => 'US', :state => "#{params[:purchase_info][:state]}", :city => "#{params[:purchase_info][:city]}", :zip => "#{params[:purchase_info][:zip_code]}"}, :package => {:weight => "#{product.weight}", :height => "#{product.height}", :depth => "#{product.depth}", :length => "#{product.length}"}}})
+        end
       end
+
+      @purchase_info = PurchaseInfo.new
+      current_order.products.each do |product|
+        if product.inventory == 0 #make check inv method?
+          flash[:notice] = "We are currently out of stock.
+                            Please modify your order."
+          redirect_to order_path(current_order)
+        elsif OrderProduct.find_by(product_id: product.id,
+                                   order_id: current_order.id
+                                   ).quantity > product.inventory
+          flash[:notice] = "We have #{product.inventory} of those in stock.
+                            Please modify your order."
+          redirect_to order_path(current_order)
+        else
+          # product.update(
+          #   inventory: product.inventory - OrderProduct.find_by(
+          #     product_id: product.id,
+          #     order_id: current_order.id
+          #   ).quantity)
+        end
+      end
+    else
+
+      render :shipping
     end
-    @shipping = HTTParty.post("http://localhost:4000/rates.json",{:body => {:origin => {:country => 'US', :state => 'CA', :city => 'Beverly Hills', :zip => '90210'}, :destination => {:country => 'US', :state => 'WA', :city => 'Seattle', :zip => '98101'}, :package => {:weight => 70, :height => 15, :depth => 10, :length => 4}}})
+  end
 
-
+  def start_purchase
+    @purchase_info = PurchaseInfo.new(purchase_params)
+    @purchase_info[:order_id] = current_order.id
   end
 
   def complete_purchase
-    @purchase_info = PurchaseInfo.new(purchase_params)
-    @purchase_info[:order_id] = current_order.id
+    # @purchase_info = PurchaseInfo.new(purchase_params)
+    # @purchase_info[:order_id] = current_order.id
     current_order.update(status: "paid")
     # session[:order_id] = nil # reset current order
     current_order.order_products.each do |op|
@@ -191,8 +209,7 @@ class OrdersController < ApplicationController
 
   def purchase_params
     params.require(:purchase_info).permit(
-    :first_name, :last_name, :address, :address2,
-    :city, :state, :zip_code, :billing_first, :billing_last,
+    :first_name, :last_name, :billing_first, :billing_last,
     :credit_card_number, :expiration_date, :cvv,
     :billing_address, :billing_address2, :billing_city, :billing_state,
     :billing_zip_code

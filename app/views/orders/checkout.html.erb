@@ -1,3 +1,15 @@
+<script>
+$( document ).ready(function() {
+  $("input[type=submit]:last").attr("disabled", "disabled");
+
+  $("input[name=shipping_price]:radio").change(function() {
+    $("#shipping_total").text($("input[name=shipping_price]:checked").val());
+    $("#total_price").text(parseFloat($("#product_total").text().replace("$",""))+parseFloat($("#shipping_total").text().replace("$","")));
+    $("input[type=submit]:last").removeAttr("disabled");
+  });
+});
+</script>
+
 <h3>Shipping Information</h3>
 
 <% if check_user %>
@@ -56,9 +68,9 @@
               </td>
             <% end %>
           </tr>
-          <% else %>
-          <% OrderProduct.find_by(product_id: product.id, order_id: @order.id).destroy %>
-            You cannot purchase <%=product.name %> 
+          <%# else %>
+          <%# OrderProduct.find_by(product_id: product.id, order_id: @order.id).destroy %>
+           <!--  You cannot purchase  --><%#=product.name %> 
           <% end %>
         <% end %> <!-- end iteration -->
         
@@ -103,20 +115,69 @@
 <% else %>
   <h3>You are not authorized to view this page!</h3>  
 <% end %>
+
 <!-- Shipping Call -->
-
+<%= form_for @purchase_info, url: {action: "start_purchase" } do |f| %>
 <hr>
-<%= @shipping %>
+<h3>Shipping Options:</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Provider</th>
+        <th>Est. Delivery Date</th>
+        <th>Price</th>
+        <th>Select</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @shippings.each do |ship| %>
+      <% ship.each do |company| %>
+      <% company[1..2].each do |offering| %>
+      <tr>
+       <td style= "text-align: left"> <%= offering["service"] %></td>
+       <td> <%= offering["delivery_range"] %> </td>
+       <td> <%= offering["price"]/100.00 %> </td>
+       <td> <input type="radio" name="shipping_price" value="<%= offering["price"]/100.00 %>"></td>
+      </tr>
+      <% end %>
+      <% end %>
+      <% end %>
+    </tbody>
+  </table>
 
- <%# @shipping.each do |rate| %>
-  <%#= rate.price %>
- <%# end %>
+<!-- strftime("%b %e, %Y") -->
+<!-- Time.now.strftime("%b %e, %Y") -->
+
+
+<!-- Total (Products + Shipping) -->
+
+<br><hr>
+<h3>Order Total:</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Product Subtotal</th>
+        <th>Shipping</th>
+        <th>TOTAL</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td><p id = "product_total"><%= number_to_currency(@total)%></p></td>
+        <td><p id ="shipping_total"></p></td>
+        <td><p id ="total_price"></p></td>
+      </tr>
+    </tbody>
+  </table>
+
 
 <!-- Checkout Forms -->
-<hr>
 
 
-  <%= form_for @purchase_info, url: {action: "complete_purchase" } do |f| %>
+<br><hr>
+  <h3>Billing Information:</h3>
+
   <% if @purchase_info.errors.any? %>
   <div class= "error_messages">
     <h2> Problem in Form </h2>
@@ -127,82 +188,48 @@
       </ul>
     </div>
   <% end %>
-  <div class="field">
-    <%= f.label :first_name %>
-    <%= f.text_field :first_name %>
-  </div>
-  <div class="field">
-    <%= f.label :last_name %>
-    <%= f.text_field :last_name %>
-  </div>
-  <div class="field">
-    <%= f.label :address %>
-    <%= f.text_field :address %>
-  </div>
-  <div class="field">
-    <%= f.label :address2 %>
-    <%= f.text_field :address2 %>
-  </div>
-  <div class="field">
-    <%= f.label :city, "City" %>
-    <%= f.text_field :city %>
-  </div>
-  <div class="field">
-    <%= f.label :state, "State" %>
-    <%= f.text_field :state %>
-  </div>
-  <div class="field">
-    <%= f.label :zip_code, "Zip Code" %>
-    <%= f.number_field :zip_code %>
-  </div>
-<hr>
-  <h3>Billing Information:</h3>
-<!--   <div class="field">
-    <#%= f.label :same_address %>
-    <#%= f.checkbox :same_address %>
-  </div> -->
-  
  <div class="field">
-    <%= f.label :billing_first %>
+    <%= f.label :billing_first %>:
     <%= f.text_field :billing_first %>
   </div>
   <div class="field">
-    <%= f.label :billing_last %>
+    <%= f.label :billing_last %>:
     <%= f.text_field :billing_last %>
   </div>
   <div class="field">
-    <%= f.label :credit_card_number %>
-    <%= f.text_field :credit_card_number %>
-  </div>
-  <div class="field">
-    <%= f.label :expiration_date %>
-    <%= f.text_field :expiration_date %>
-  </div>
-  <div class="field">
-    <%= f.label :cvv %>
-    <%= f.text_field :cvv %>
-  </div>
-  <div class="field">
-    <%= f.label :billing_address %>
+    <%= f.label :billing_address %>:
     <%= f.text_field :billing_address %>
   </div>
   <div class="field">
-    <%= f.label :billing_address2 %>
+    <%= f.label :billing_address2 %>:
     <%= f.text_field :billing_address2 %>
   </div>
   <div class="field">
-    <%= f.label :billing_city %>
+    <%= f.label :billing_city %>:
     <%= f.text_field :billing_city %>
   </div>
   <div class="field">
-    <%= f.label :billing_state %>
+    <%= f.label :billing_state %>:
     <%= f.text_field :billing_state %>
   </div>
   <div class="field">
-    <%= f.label :billing_zip_code %>
+    <%= f.label :billing_zip_code %>:
     <%= f.number_field :billing_zip_code %>
   </div>
-  <%= f.submit %>
+  <div class="field">
+    <%= f.label :credit_card_number %>:
+    <%= f.text_field :credit_card_number %>
+  </div>
+  <div class="field">
+    <%= f.label :expiration_date %>:
+    <%= f.text_field :expiration_date %>
+  </div>
+  <div class="field">
+    <%= f.label :cvv %>:
+    <%= f.text_field :cvv %>
+  </div>
+  <br>
+  <%= f.submit "Submit Order", url: complete_purchase_path %> 
 <% end %>
 
 <hr>

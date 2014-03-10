@@ -29,16 +29,18 @@ Hippo::Application.routes.draw do
   post "/orders/:id/add_product/:product_id",
        to: "orders#add_product",
        as: :add_product
-  get "orders/:id", to: "orders#show", as: :order
+  get "orders/:id", to: "orders#show", as: :order # cart
   delete '/orders/:id/remove_product/:product_id',
          to: "orders#remove_product",
          as: :remove_product
   patch '/orders/:id/update_quantity/:product_id',
         to: "orders#update_quantity",
         as: :update_quantity
-  get 'orders/shipping', to: 'orders#shipping', as: :shipping
+  # get 'orders/shipping', to: 'orders#shipping', as: :shipping
   get "/search"         => "search#show"
-  get "/checkout"       => "orders#checkout", as: :checkout
+  get "/shipping", to: "orders#shipping", as: :shipping
+  post "/checkout"       => "orders#checkout", as: :checkout
+  post "/purchase_info" => "orders#start_purchase", as: :start_purchase
   post "/purchase_info" => "orders#complete_purchase", as: :complete_purchase
   root 'welcome#index'
 end

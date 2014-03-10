@@ -122,18 +122,13 @@ class UsersController < ApplicationController
     params.require(:user).permit(
                                 :name,
                                 :email,
-                                :password,
-                                :password_confirmation
-                                )
-  end
-
-  def seller_params
-    params.require(:user).permit(
                                 :seller_address,
                                 :seller_address2,
                                 :seller_city,
                                 :seller_state,
-                                :seller_zipcode
+                                :seller_zipcode,
+                                :password,
+                                :password_confirmation
                                 )
   end
 end
